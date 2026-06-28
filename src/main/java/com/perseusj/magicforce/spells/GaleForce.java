@@ -1,0 +1,116 @@
+package com.perseusj.magicforce.spells;
+
+import com.perseusj.magicforce.MagicForce;
+import com.perseusj.magicforce.utils.Utils;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
+
+import java.util.List;
+
+public class GaleForce extends Spell {
+    private final double maxRadius;
+    private final double knockbackMultiplier;
+
+    public GaleForce(int tier) {
+        super(
+            tier == 1 ? "gale_force" : "gale_force_" + tier,
+            "Gale Force" + (tier == 1 ? "" : " " + Utils.toRoman(tier)),
+            SpellElement.WIND,
+            tier,
+            getManaCostForTier(tier),
+            getCooldownForTier(tier)
+        );
+        this.maxRadius = getRadiusForTier(tier);
+        this.knockbackMultiplier = getKnockbackMultiplierForTier(tier);
+    }
+
+    private static int getManaCostForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 25;
+            case 3 -> 40;
+            default -> 15;
+        };
+    }
+
+    private static double getCooldownForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 4.5;
+            case 3 -> 3.5;
+            default -> 6.0;
+        };
+    }
+
+    private static double getRadiusForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 6.5;
+            case 3 -> 8.0;
+            default -> 5.0;
+        };
+    }
+
+    private static double getKnockbackMultiplierForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 2.5;
+            case 3 -> 3.2;
+            default -> 2.0;
+        };
+    }
+
+    @Override
+    public void cast(Player player) {
+        Vector direction = player.getEyeLocation().getDirection().normalize();
+        player.getWorld().playSound(player.getLocation(), org.bukkit.Sound.ENTITY_BREEZE_SHOOT, 1.0f, 1.0f);
+
+        List<Entity> nearby = player.getNearbyEntities(maxRadius, maxRadius, maxRadius);
+        for (Entity entity : nearby) {
+            if (entity.equals(player)) continue;
+            Vector toEntity = entity.getLocation().toVector().subtract(player.getLocation().toVector());
+            if (toEntity.length() > maxRadius) continue;
+            if (direction.dot(toEntity.normalize()) < 0.3) continue;
+            entity.setVelocity(direction.clone().multiply(knockbackMultiplier).setY(0.5));
+        }
+
+        new BukkitRunnable() {
+            int ticks = 0;
+            final int totalTicks = 10;
+
+            @Override
+            public void run() {
+                if (ticks >= totalTicks) {
+                    cancel();
+                    return;
+                }
+
+                Location origin = player.getEyeLocation();
+                float yaw = player.getLocation().getYaw();
+                float pitch = player.getLocation().getPitch();
+
+                double spread = 0.5 + ticks * 0.3;
+                int particles = 6 + ticks * 2;
+
+                for (int i = 0; i < particles; i++) {
+                    double hAngle = Math.toRadians(yaw + 90) + (Math.random() - 0.5) * spread * 2;
+                    double vAngle = Math.toRadians(pitch) + (Math.random() - 0.5) * spread * 0.8;
+
+                    double dist = 1.0 + ticks * 0.8 * (maxRadius / 5.0);
+                    double x = -Math.sin(hAngle) * Math.cos(vAngle) * dist;
+                    double z = Math.cos(hAngle) * Math.cos(vAngle) * dist;
+                    double y = -Math.sin(vAngle) * dist;
+
+                    Location particleLoc = origin.clone().add(x, y, z);
+                    player.getWorld().spawnParticle(Particle.CLOUD, particleLoc, 1, 0.1, 0.1, 0.1, 0);
+                    player.getWorld().spawnParticle(Particle.POOF, particleLoc, 1, 0.1, 0.1, 0.1, 0);
+                    if (ticks % 2 == 0) {
+                        player.getWorld().spawnParticle(Particle.SWEEP_ATTACK, particleLoc, 1, 0.05, 0.05, 0.05, 0);
+                    }
+                }
+
+                ticks++;
+            }
+        }.runTaskTimer(MagicForce.getInstance(), 0L, 2L);
+    }
+}

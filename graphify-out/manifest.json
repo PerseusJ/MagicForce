@@ -1,0 +1,127 @@
+{
+  ".vscode/settings.json": {
+    "mtime": 1782616436.430001,
+    "ast_hash": "0bdccf3f74ca242511bb4114b3b44bfd",
+    "semantic_hash": "0bdccf3f74ca242511bb4114b3b44bfd"
+  },
+  "src/main/java/com/perseusj/magicforce/MagicForce.java": {
+    "mtime": 1782665421.4261062,
+    "ast_hash": "dffbf6b1356821010862a6afa595cf9f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/listeners/PlayerListener.java": {
+    "mtime": 1782665420.1299984,
+    "ast_hash": "9281e5d04bdc1a6d8849da80d619ea9f",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/managers/PluginManager.java": {
+    "mtime": 1782669241.3991005,
+    "ast_hash": "9f7825f5852169a0fb8e41b698ee3217",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/utils/Utils.java": {
+    "mtime": 1782616400.854715,
+    "ast_hash": "4e7f2d44bd30d6899652b1dea7fbab39",
+    "semantic_hash": "4e7f2d44bd30d6899652b1dea7fbab39"
+  },
+  ".agents/rules/graphify.md": {
+    "mtime": 1782664709.1384983,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": "a0e4d192b9e2e17256124dbfc8e24e6a"
+  },
+  ".agents/workflows/graphify.md": {
+    "mtime": 1782664709.1384983,
+    "ast_hash": "637776aa6f7496d069afe7520c845c8a",
+    "semantic_hash": "637776aa6f7496d069afe7520c845c8a"
+  },
+  "src/main/resources/plugin.yml": {
+    "mtime": 1782616400.8487198,
+    "ast_hash": "fa7bd2d670b50490800e0608412c83d2",
+    "semantic_hash": "fa7bd2d670b50490800e0608412c83d2"
+  },
+  "src/main/java/com/perseusj/magicforce/listeners/MagicListener.java": {
+    "mtime": 1782670490.306738,
+    "ast_hash": "3f5ea6724e63d263d6cee411e32bfe88",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/managers/GrimoireManager.java": {
+    "mtime": 1782665379.8313675,
+    "ast_hash": "2aed1e9201481dbababdc36c5bd220d9",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/managers/InscriptionManager.java": {
+    "mtime": 1782670477.136724,
+    "ast_hash": "e5d5577bae8607dd752d436d7acfa915",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/managers/ManaManager.java": {
+    "mtime": 1782665370.9056804,
+    "ast_hash": "205b9c135c507e3229df31f3ac3b3750",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/managers/ScoreboardManager.java": {
+    "mtime": 1782665384.6649857,
+    "ast_hash": "b39dae1b0f5a2e7086c657b249370db6",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/AquaTorrent.java": {
+    "mtime": 1782665445.536784,
+    "ast_hash": "6931ae3e29719b4fb83f4bfd68c1a938",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/CleansingTide.java": {
+    "mtime": 1782665351.92158,
+    "ast_hash": "1375a28571aad2f493f322712a26e1b1",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/CombustionBlast.java": {
+    "mtime": 1782665345.4565582,
+    "ast_hash": "d45631291fdd4e3d794f55c6c00904e2",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/EarthenRampart.java": {
+    "mtime": 1782665354.5927925,
+    "ast_hash": "7ce3183e231e0838e195ac6ac873caa0",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/GaleForce.java": {
+    "mtime": 1782665359.8999596,
+    "ast_hash": "7e3c562aaa9cbe72d16c8f01d050de52",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/IgnitionDart.java": {
+    "mtime": 1782665342.820624,
+    "ast_hash": "5b681676ed585f8af2512d8916349b9e",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/Spell.java": {
+    "mtime": 1782665336.866863,
+    "ast_hash": "4fa175010d3a51b0b1a8d2e4351df8fb",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/SpellElement.java": {
+    "mtime": 1782665335.4322872,
+    "ast_hash": "e6abae14cfdc1991ab8072552a734736",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/SpellRegistry.java": {
+    "mtime": 1782670444.85039,
+    "ast_hash": "d8886400d78e4768a6ab7df81ba45fac",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/TremorSmash.java": {
+    "mtime": 1782665445.9825046,
+    "ast_hash": "1ee8e041d68bb7783677fd11b15d1077",
+    "semantic_hash": ""
+  },
+  "src/main/java/com/perseusj/magicforce/spells/ZephyrBlade.java": {
+    "mtime": 1782665446.6433315,
+    "ast_hash": "971e9d29aa6feff596d4b200594237e6",
+    "semantic_hash": ""
+  },
+  "plan.md": {
+    "mtime": 1782670212.8774364,
+    "ast_hash": "4a84cf5fffe5cad456c5d96b12a87f53",
+    "semantic_hash": ""
+  }
+}

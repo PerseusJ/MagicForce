@@ -2,6 +2,7 @@ package com.perseusj.magicforce.utils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import net.md_5.bungee.api.ChatColor;
 
 public class Utils {
@@ -16,5 +17,12 @@ public class Utils {
         return ChatColor.translateAlternateColorCodes('&', msg);
     }
     
-    // Add more utility methods here
+    public static String toRoman(int num) {
+        return switch (num) {
+            case 1 -> "I";
+            case 2 -> "II";
+            case 3 -> "III";
+            default -> String.valueOf(num);
+        };
+    }
 }

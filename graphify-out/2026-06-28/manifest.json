@@ -1,0 +1,42 @@
+{
+  "C:\\Projects\\MagicForce\\.vscode\\settings.json": {
+    "mtime": 1782616436.430001,
+    "ast_hash": "0bdccf3f74ca242511bb4114b3b44bfd",
+    "semantic_hash": "0bdccf3f74ca242511bb4114b3b44bfd"
+  },
+  "C:\\Projects\\MagicForce\\src\\main\\java\\com\\perseusj\\magicforce\\MagicForce.java": {
+    "mtime": 1782616400.851448,
+    "ast_hash": "fee89d4fa2d04eb5ac06a1a3faf0c17e",
+    "semantic_hash": "fee89d4fa2d04eb5ac06a1a3faf0c17e"
+  },
+  "C:\\Projects\\MagicForce\\src\\main\\java\\com\\perseusj\\magicforce\\listeners\\PlayerListener.java": {
+    "mtime": 1782616400.854715,
+    "ast_hash": "1aa7644ea19851e012341f7037238dfb",
+    "semantic_hash": "1aa7644ea19851e012341f7037238dfb"
+  },
+  "C:\\Projects\\MagicForce\\src\\main\\java\\com\\perseusj\\magicforce\\managers\\PluginManager.java": {
+    "mtime": 1782616400.851448,
+    "ast_hash": "670f6d561008b6014eff8311d6835a7d",
+    "semantic_hash": "670f6d561008b6014eff8311d6835a7d"
+  },
+  "C:\\Projects\\MagicForce\\src\\main\\java\\com\\perseusj\\magicforce\\utils\\Utils.java": {
+    "mtime": 1782616400.854715,
+    "ast_hash": "4e7f2d44bd30d6899652b1dea7fbab39",
+    "semantic_hash": "4e7f2d44bd30d6899652b1dea7fbab39"
+  },
+  "C:\\Projects\\MagicForce\\.agents\\rules\\graphify.md": {
+    "mtime": 1782664709.1384983,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": "a0e4d192b9e2e17256124dbfc8e24e6a"
+  },
+  "C:\\Projects\\MagicForce\\.agents\\workflows\\graphify.md": {
+    "mtime": 1782664709.1384983,
+    "ast_hash": "637776aa6f7496d069afe7520c845c8a",
+    "semantic_hash": "637776aa6f7496d069afe7520c845c8a"
+  },
+  "C:\\Projects\\MagicForce\\src\\main\\resources\\plugin.yml": {
+    "mtime": 1782616400.8487198,
+    "ast_hash": "fa7bd2d670b50490800e0608412c83d2",
+    "semantic_hash": "fa7bd2d670b50490800e0608412c83d2"
+  }
+}

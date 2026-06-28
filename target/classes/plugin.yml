@@ -3,3 +3,14 @@ version: 1.0.0-SNAPSHOT
 name: MagicForce
 author: PerseusJ
 api-version: 1.21
+
+commands:
+  magicforce:
+    description: Admin commands for MagicForce
+    aliases: [mf]
+    usage: /<command> give <inscriptiontable|grimoire|scroll> [player] [args]
+
+permissions:
+  magicforce.admin:
+    description: Access to MagicForce admin commands
+    default: op
