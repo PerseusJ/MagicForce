@@ -1,0 +1,5 @@
+main: com.perseusj.magicforce.MagicForce
+version: 1.0.0-SNAPSHOT
+name: MagicForce
+author: PerseusJ
+api-version: 1.21
