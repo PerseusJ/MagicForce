@@ -21,11 +21,20 @@ public class CleansingTide extends Spell {
             SpellElement.WATER,
             tier,
             getManaCostForTier(tier),
-            getCooldownForTier(tier)
+            getCooldownForTier(tier),
+            getChargeTimeForTier(tier)
         );
         this.healingAmount = getHealingAmountForTier(tier);
         this.regenDurationTicks = getRegenDurationForTier(tier);
         this.regenAmplifier = getRegenAmplifierForTier(tier);
+    }
+
+    private static int getChargeTimeForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 42;
+            case 3 -> 34;
+            default -> 50; // 2.5s
+        };
     }
 
     private static int getManaCostForTier(int tier) {
@@ -117,5 +126,29 @@ public class CleansingTide extends Spell {
                 ticks++;
             }
         }.runTaskTimer(MagicForce.getInstance(), 0L, 1L);
+    }
+
+    @Override
+    public void spawnChantingParticles(Player player, Location handLoc, double progress, int elapsed) {
+        // Gentle healing particles rising from the hand — serene and warm
+        int sparkCount = 1 + (int) (progress * 3);
+        double driftRadius = 0.3 + progress * 0.2;
+
+        for (int i = 0; i < sparkCount; i++) {
+            double angle = elapsed * 0.2 + (2 * Math.PI * i / sparkCount);
+            Location sparkLoc = handLoc.clone().add(
+                Math.cos(angle) * driftRadius,
+                0.1 + progress * 0.2,
+                Math.sin(angle) * driftRadius
+            );
+            player.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, sparkLoc, 1, 0.05, 0.1, 0.05, 0);
+            if (progress > 0.4) {
+                player.getWorld().spawnParticle(Particle.SPLASH, sparkLoc.clone().add(0, -0.1, 0), 1, 0.05, 0, 0.05, 0);
+            }
+        }
+        // Heart particles appear near full charge
+        if (progress > 0.8 && elapsed % 5 == 0) {
+            player.getWorld().spawnParticle(Particle.HEART, handLoc.clone().add(0, 0.2, 0), 1, 0.1, 0.1, 0.1, 0);
+        }
     }
 }

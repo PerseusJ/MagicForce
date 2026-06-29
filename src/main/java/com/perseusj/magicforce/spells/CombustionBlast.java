@@ -27,11 +27,20 @@ public class CombustionBlast extends Spell {
             SpellElement.FIRE,
             tier,
             getManaCostForTier(tier),
-            getCooldownForTier(tier)
+            getCooldownForTier(tier),
+            getChargeTimeForTier(tier)
         );
         this.damage = getDamageForTier(tier);
         this.fireTicks = getFireTicksForTier(tier);
         this.knockbackMultiplier = getKnockbackMultiplierForTier(tier);
+    }
+
+    private static int getChargeTimeForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 50;
+            case 3 -> 40;
+            default -> 60; // 3s
+        };
     }
 
     private static int getManaCostForTier(int tier) {
@@ -134,5 +143,32 @@ public class CombustionBlast extends Spell {
                 ticks++;
             }
         }.runTaskTimer(MagicForce.getInstance(), 0L, 2L);
+    }
+
+    @Override
+    public void spawnChantingParticles(Player player, Location handLoc, double progress, int elapsed) {
+        // Chaotic dual-flame with smoke — volatile, explosive energy building up
+        double jitter = 0.1 + progress * 0.3;
+        int flameCount = 1 + (int) (progress * 5);
+
+        for (int i = 0; i < flameCount; i++) {
+            Location jitterLoc = handLoc.clone().add(
+                (Math.random() - 0.5) * jitter,
+                (Math.random() - 0.5) * jitter,
+                (Math.random() - 0.5) * jitter
+            );
+            player.getWorld().spawnParticle(Particle.FLAME, jitterLoc, 1, 0, 0, 0, 0);
+            if (i % 2 == 0) {
+                player.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, jitterLoc, 1, 0.03, 0.03, 0.03, 0);
+            }
+        }
+        // Rising smoke
+        if (progress > 0.2) {
+            player.getWorld().spawnParticle(Particle.SMOKE, handLoc.clone().add(0, 0.2, 0), 1, 0.1, 0.1, 0.1, 0.02);
+        }
+        // Lava sparks at high charge
+        if (progress > 0.6 && elapsed % 4 == 0) {
+            player.getWorld().spawnParticle(Particle.LAVA, handLoc, 1, 0.1, 0.1, 0.1, 0);
+        }
     }
 }

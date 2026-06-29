@@ -25,10 +25,19 @@ public class TremorSmash extends Spell {
             SpellElement.EARTH,
             tier,
             getManaCostForTier(tier),
-            getCooldownForTier(tier)
+            getCooldownForTier(tier),
+            getChargeTimeForTier(tier)
         );
         this.maxRadius = getRadiusForTier(tier);
         this.damage = getDamageForTier(tier);
+    }
+
+    private static int getChargeTimeForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 42;
+            case 3 -> 34;
+            default -> 50; // 2.5s
+        };
     }
 
     private static int getManaCostForTier(int tier) {
@@ -117,5 +126,27 @@ public class TremorSmash extends Spell {
                 ticks++;
             }
         }.runTaskTimer(MagicForce.getInstance(), 0L, 1L);
+    }
+
+    @Override
+    public void spawnChantingParticles(Player player, Location handLoc, double progress, int elapsed) {
+        // Earth/dirt particles vibrating and rumbling — seismic energy
+        org.bukkit.block.data.BlockData dirtData = org.bukkit.Material.DIRT.createBlockData();
+        double vibration = 0.04 + progress * 0.12; // hand "shakes" more as charge fills
+        int clumpCount = 2 + (int) (progress * 5);
+
+        for (int i = 0; i < clumpCount; i++) {
+            Location earthLoc = handLoc.clone().add(
+                (Math.random() - 0.5) * vibration * 4,
+                (Math.random() - 0.5) * vibration * 2,
+                (Math.random() - 0.5) * vibration * 4
+            );
+            player.getWorld().spawnParticle(Particle.BLOCK, earthLoc, 1, 0.01, 0.01, 0.01, 0, dirtData);
+        }
+        // Gust particles at edges showing outward seismic pressure
+        if (progress > 0.4 && elapsed % 3 == 0) {
+            player.getWorld().spawnParticle(Particle.GUST, handLoc.clone().add(
+                (Math.random() - 0.5) * 0.3, 0, (Math.random() - 0.5) * 0.3), 1, 0, 0, 0, 0);
+        }
     }
 }

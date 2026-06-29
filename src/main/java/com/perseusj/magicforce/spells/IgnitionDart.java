@@ -29,10 +29,19 @@ public class IgnitionDart extends Spell {
             SpellElement.FIRE,
             tier,
             getManaCostForTier(tier),
-            getCooldownForTier(tier)
+            getCooldownForTier(tier),
+            getChargeTimeForTier(tier)
         );
         this.damage = getDamageForTier(tier);
         this.fireTicks = getFireTicksForTier(tier);
+    }
+
+    private static int getChargeTimeForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 26;
+            case 3 -> 22;
+            default -> 30; // 1.5s
+        };
     }
 
     private static int getManaCostForTier(int tier) {
@@ -133,4 +142,30 @@ public class IgnitionDart extends Spell {
         player.getWorld().spawnParticle(Particle.LAVA, loc, 15, 0.5, 0.5, 0.5, 0);
         player.getWorld().spawnParticle(Particle.EXPLOSION, loc, 1, 0, 0, 0, 0);
     }
+
+    @Override
+    public void spawnChantingParticles(Player player, Location handLoc, double progress, int elapsed) {
+        // Flame particles spiral inward, forming a tight fireball in the hand
+        int orbitCount = 2 + (int) (progress * 4); // 2 → 6 particles as charge fills
+        double radius = 0.5 - progress * 0.35;      // shrinks from 0.5 to 0.15 (condensing)
+        double speed = 0.3 + progress * 0.7;         // spiral speeds up with progress
+
+        for (int i = 0; i < orbitCount; i++) {
+            double angle = elapsed * speed + (2 * Math.PI * i / orbitCount);
+            Location flameLoc = handLoc.clone().add(
+                Math.cos(angle) * radius,
+                Math.sin(elapsed * 0.15) * 0.15,
+                Math.sin(angle) * radius
+            );
+            player.getWorld().spawnParticle(Particle.FLAME, flameLoc, 1, 0, 0, 0, 0);
+            if (progress > 0.3) {
+                player.getWorld().spawnParticle(Particle.SMALL_FLAME, flameLoc, 1, 0.05, 0.05, 0.05, 0);
+            }
+        }
+        // Dense core glow when nearly charged
+        if (progress > 0.7) {
+            player.getWorld().spawnParticle(Particle.FLAME, handLoc, 2, 0.05, 0.05, 0.05, 0);
+        }
+    }
 }
+

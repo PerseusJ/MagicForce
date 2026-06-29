@@ -28,9 +28,18 @@ public class ZephyrBlade extends Spell {
             SpellElement.WIND,
             tier,
             getManaCostForTier(tier),
-            getCooldownForTier(tier)
+            getCooldownForTier(tier),
+            getChargeTimeForTier(tier)
         );
         this.damage = getDamageForTier(tier);
+    }
+
+    private static int getChargeTimeForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 26;
+            case 3 -> 22;
+            default -> 30; // 1.5s
+        };
     }
 
     private static int getManaCostForTier(int tier) {
@@ -121,5 +130,29 @@ public class ZephyrBlade extends Spell {
             player.getWorld().spawnParticle(Particle.SWEEP_ATTACK, slashLoc, 1, 0, 0, 0, 0);
         }
         player.getWorld().spawnParticle(Particle.CLOUD, loc, 10, 0.5, 0.5, 0.5, 0.1);
+    }
+
+    @Override
+    public void spawnChantingParticles(Player player, Location handLoc, double progress, int elapsed) {
+        // SWEEP_ATTACK particles forming a sharpening blade silhouette
+        int bladePoints = 3 + (int) (progress * 6); // more defined blade at full charge
+        double bladeLength = 0.2 + progress * 0.35;
+
+        for (int i = 0; i < bladePoints; i++) {
+            double t = (double) i / bladePoints - 0.5;
+            // Blade aligned with player view direction
+            org.bukkit.util.Vector dir = player.getEyeLocation().getDirection().normalize();
+            org.bukkit.util.Vector right = new org.bukkit.util.Vector(-dir.getZ(), 0, dir.getX()).normalize();
+            Location bladeLoc = handLoc.clone().add(
+                right.getX() * t * bladeLength,
+                t * bladeLength * 0.3,
+                right.getZ() * t * bladeLength
+            );
+            player.getWorld().spawnParticle(Particle.SWEEP_ATTACK, bladeLoc, 1, 0, 0, 0, 0);
+            // Wispy cloud edges at higher progress
+            if (progress > 0.4 && i % 2 == 0) {
+                player.getWorld().spawnParticle(Particle.CLOUD, bladeLoc, 1, 0.02, 0.02, 0.02, 0);
+            }
+        }
     }
 }

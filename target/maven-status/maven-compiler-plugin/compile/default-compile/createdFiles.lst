@@ -1,8 +1,10 @@
 com\perseusj\magicforce\spells\GaleForce$1.class
 com\perseusj\magicforce\managers\ManaManager$2.class
 com\perseusj\magicforce\spells\TremorSmash$1.class
+com\perseusj\magicforce\spells\Spell$1.class
 com\perseusj\magicforce\utils\Utils.class
 com\perseusj\magicforce\MagicForce.class
+com\perseusj\magicforce\managers\ChantingManager$2.class
 com\perseusj\magicforce\spells\ZephyrBlade.class
 com\perseusj\magicforce\spells\SpellRegistry.class
 com\perseusj\magicforce\managers\PluginManager.class

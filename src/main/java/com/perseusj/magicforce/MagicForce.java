@@ -2,6 +2,7 @@ package com.perseusj.magicforce;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import com.perseusj.magicforce.commands.AdminCommand;
+import com.perseusj.magicforce.managers.ChantingManager;
 import com.perseusj.magicforce.managers.PluginManager;
 import com.perseusj.magicforce.managers.TableManager;
 import com.perseusj.magicforce.listeners.PlayerListener;
@@ -19,6 +20,7 @@ public class MagicForce extends JavaPlugin {
         instance = this;
 
         PluginManager.getInstance().initialize();
+        ChantingManager.getInstance(); // initialize singleton
 
         if (getCommand("magicforce") != null) {
             getCommand("magicforce").setExecutor(new AdminCommand());
@@ -32,6 +34,7 @@ public class MagicForce extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        ChantingManager.getInstance().cleanup();
         com.perseusj.magicforce.managers.TableManager.getInstance().saveTables();
         getLogger().info("MagicForce has been disabled!");
     }

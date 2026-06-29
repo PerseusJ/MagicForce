@@ -1,5 +1,6 @@
 package com.perseusj.magicforce.listeners;
 
+import com.perseusj.magicforce.managers.ChantingManager;
 import com.perseusj.magicforce.managers.GrimoireManager;
 import com.perseusj.magicforce.managers.InscriptionManager;
 import com.perseusj.magicforce.managers.ManaManager;
@@ -15,12 +16,14 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -50,7 +53,9 @@ public class MagicListener implements Listener {
         boolean isGrimoire = GrimoireManager.getInstance().getGrimoireTier(item) > 0;
         String scrollSpellId = GrimoireManager.getInstance().getScrollSpellId(item);
 
+        // Shift + Left-click — open socketing GUI (only when NOT chanting)
         if (isGrimoire && player.isSneaking()
+                && !ChantingManager.getInstance().isChantingOrReady(player)
                 && (event.getAction() == org.bukkit.event.block.Action.LEFT_CLICK_AIR
                     || event.getAction() == org.bukkit.event.block.Action.LEFT_CLICK_BLOCK)) {
             event.setCancelled(true);
@@ -58,13 +63,30 @@ public class MagicListener implements Listener {
             return;
         }
 
+        // Left-click with grimoire — fire charged spell (chanting system)
         if (isGrimoire && (event.getAction() == org.bukkit.event.block.Action.LEFT_CLICK_AIR
                 || event.getAction() == org.bukkit.event.block.Action.LEFT_CLICK_BLOCK)) {
             event.setCancelled(true);
-            castFromGrimoire(player, item);
+            if (ChantingManager.getInstance().isReady(player)) {
+                // Fire the charged spell; cooldown is set inside fireSpell
+                Spell spell = ChantingManager.getInstance().getCurrentSpell(player);
+                if (spell != null) {
+                    if (checkCooldown(player, spell)) {
+                        ChantingManager.getInstance().fireSpell(player);
+                        setCooldown(player, spell);
+                    } else {
+                        // Cooldown message shown by checkCooldown; cancel charge
+                        ChantingManager.getInstance().cancelChanting(player, false);
+                    }
+                }
+            } else if (ChantingManager.getInstance().isChanting(player)) {
+                player.sendMessage(Utils.colorize("&7Still chanting..."));
+            }
+            // If neither chanting nor ready, left-click does nothing (must hold shift first)
             return;
         }
 
+        // Right-click a raw scroll — instant cast, no chanting
         if (scrollSpellId != null && (event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_AIR
                 || event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)) {
             event.setCancelled(true);
@@ -73,9 +95,57 @@ public class MagicListener implements Listener {
         }
     }
 
+    // ── Chanting triggers ─────────────────────────────────────────────────────
+
+    /** Pressing shift starts the chanting for the selected grimoire spell. */
+    @EventHandler
+    public void onPlayerSneak(PlayerToggleSneakEvent event) {
+        Player player = event.getPlayer();
+        if (event.isSneaking()) {
+            // Player just pressed shift — try to start chanting
+            ItemStack item = player.getInventory().getItemInMainHand();
+            if (GrimoireManager.getInstance().getGrimoireTier(item) == 0) return;
+            if (ChantingManager.getInstance().isChantingOrReady(player)) return;
+
+            List<String> scrolls = GrimoireManager.getInstance().getSocketedScrolls(item);
+            int activeSlot = ScoreboardManager.getInstance().getActiveSlot(player);
+            if (scrolls.isEmpty() || activeSlot >= scrolls.size() || scrolls.get(activeSlot).isEmpty()) {
+                player.sendMessage(Utils.colorize("&cNo spell selected!"));
+                return;
+            }
+            String spellId = scrolls.get(activeSlot);
+            Spell spell = SpellRegistry.getById(spellId);
+            if (spell == null) return;
+
+            ChantingManager.getInstance().startChanting(player, spell, item);
+        } else {
+            // Player released shift — cancel charge if still in charging phase
+            if (ChantingManager.getInstance().isChanting(player)) {
+                ChantingManager.getInstance().cancelChanting(player, true);
+            }
+            // If READY, releasing shift does NOT cancel (player can still fire)
+        }
+    }
+
+    /** Taking damage interrupts chanting (but NOT a ready spell — already paid mana). */
+    @EventHandler
+    public void onPlayerDamaged(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (ChantingManager.getInstance().isChanting(player)) {
+            ChantingManager.getInstance().cancelChanting(player, true);
+            player.sendMessage(Utils.colorize("&cChanting interrupted!"));
+        }
+    }
+
     @EventHandler
     public void onItemHeld(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
+
+        // Cancel chanting when switching items
+        if (ChantingManager.getInstance().isChantingOrReady(player)) {
+            ChantingManager.getInstance().cancelChanting(player, true);
+        }
+
         if (!player.isSneaking()) return;
 
         ItemStack item = player.getInventory().getItemInMainHand();
@@ -274,30 +344,6 @@ public class MagicListener implements Listener {
         }
     }
 
-    private void castFromGrimoire(Player player, ItemStack grimoire) {
-        List<String> scrolls = GrimoireManager.getInstance().getSocketedScrolls(grimoire);
-        int activeSlot = ScoreboardManager.getInstance().getActiveSlot(player);
-
-        if (scrolls.isEmpty() || activeSlot >= scrolls.size()) {
-            player.sendMessage(Utils.colorize("&cNo spell selected!"));
-            return;
-        }
-
-        String spellId = scrolls.get(activeSlot);
-        Spell spell = SpellRegistry.getById(spellId);
-        if (spell == null) return;
-
-        if (!checkCooldown(player, spell)) return;
-
-        if (!ManaManager.getInstance().removeMana(player, spell.getManaCost())) {
-            player.sendMessage(Utils.colorize("&cNot enough mana!"));
-            return;
-        }
-
-        spell.cast(player);
-        setCooldown(player, spell);
-        player.sendMessage(Utils.colorize("&6✦ Cast &f" + spell.getName()));
-    }
 
     private void castRawScroll(Player player, ItemStack scroll, String spellId) {
         Spell spell = SpellRegistry.getById(spellId);

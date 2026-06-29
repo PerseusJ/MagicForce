@@ -22,10 +22,19 @@ public class GaleForce extends Spell {
             SpellElement.WIND,
             tier,
             getManaCostForTier(tier),
-            getCooldownForTier(tier)
+            getCooldownForTier(tier),
+            getChargeTimeForTier(tier)
         );
         this.maxRadius = getRadiusForTier(tier);
         this.knockbackMultiplier = getKnockbackMultiplierForTier(tier);
+    }
+
+    private static int getChargeTimeForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 26;
+            case 3 -> 22;
+            default -> 30; // 1.5s
+        };
     }
 
     private static int getManaCostForTier(int tier) {
@@ -112,5 +121,27 @@ public class GaleForce extends Spell {
                 ticks++;
             }
         }.runTaskTimer(MagicForce.getInstance(), 0L, 2L);
+    }
+
+    @Override
+    public void spawnChantingParticles(Player player, Location handLoc, double progress, int elapsed) {
+        // Swirling wind vortex — rotation accelerates dramatically toward full charge
+        double spinSpeed = 0.2 + progress * 0.8; // gets much faster
+        int streamCount = 3 + (int) (progress * 4); // 3 → 7 streams
+        double radius = 0.4 + progress * 0.15;  // expands slightly
+
+        for (int i = 0; i < streamCount; i++) {
+            double angle = elapsed * spinSpeed + (2 * Math.PI * i / streamCount);
+            double yOff = Math.sin(angle * 0.5) * 0.2;
+            Location cloudLoc = handLoc.clone().add(
+                Math.cos(angle) * radius,
+                yOff,
+                Math.sin(angle) * radius
+            );
+            player.getWorld().spawnParticle(Particle.CLOUD, cloudLoc, 1, 0.01, 0.01, 0.01, 0);
+            if (i % 2 == 0) {
+                player.getWorld().spawnParticle(Particle.POOF, cloudLoc, 1, 0.01, 0.01, 0.01, 0);
+            }
+        }
     }
 }

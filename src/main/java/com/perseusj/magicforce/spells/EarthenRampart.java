@@ -24,9 +24,18 @@ public class EarthenRampart extends Spell {
             SpellElement.EARTH,
             tier,
             getManaCostForTier(tier),
-            getCooldownForTier(tier)
+            getCooldownForTier(tier),
+            getChargeTimeForTier(tier)
         );
         this.wallDurationTicks = getDurationForTier(tier);
+    }
+
+    private static int getChargeTimeForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 34;
+            case 3 -> 28;
+            default -> 40; // 2s
+        };
     }
 
     private static int getManaCostForTier(int tier) {
@@ -103,5 +112,29 @@ public class EarthenRampart extends Spell {
                 standingTicks++;
             }
         }.runTaskTimer(MagicForce.getInstance(), 0L, 1L);
+    }
+
+    @Override
+    public void spawnChantingParticles(Player player, Location handLoc, double progress, int elapsed) {
+        // Stone/cobblestone particles condensing into a heavy mass in the hand
+        org.bukkit.block.data.BlockData cobbleData = org.bukkit.Material.COBBLESTONE.createBlockData();
+        int particleCount = 1 + (int) (progress * 4);
+        double radius = 0.5 - progress * 0.25; // condenses toward center
+
+        for (int i = 0; i < particleCount; i++) {
+            double angle = elapsed * 0.12 + (2 * Math.PI * i / particleCount);
+            // Slight downward pull — heavy feel
+            double yOff = -0.05 + Math.sin(elapsed * 0.08 + i) * 0.08;
+            Location stoneLoc = handLoc.clone().add(
+                Math.cos(angle) * radius,
+                yOff,
+                Math.sin(angle) * radius
+            );
+            player.getWorld().spawnParticle(Particle.BLOCK, stoneLoc, 1, 0.02, 0.02, 0.02, 0, cobbleData);
+        }
+        // Dense core at high charge
+        if (progress > 0.7) {
+            player.getWorld().spawnParticle(Particle.BLOCK, handLoc, 2, 0.05, 0.05, 0.05, 0, cobbleData);
+        }
     }
 }

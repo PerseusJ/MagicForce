@@ -25,11 +25,20 @@ public class AquaTorrent extends Spell {
             SpellElement.WATER,
             tier,
             getManaCostForTier(tier),
-            getCooldownForTier(tier)
+            getCooldownForTier(tier),
+            getChargeTimeForTier(tier)
         );
         this.knockbackMultiplier = getKnockbackMultiplierForTier(tier);
         this.slownessDurationTicks = getSlownessDurationForTier(tier);
         this.slownessAmplifier = getSlownessAmplifierForTier(tier);
+    }
+
+    private static int getChargeTimeForTier(int tier) {
+        return switch (tier) {
+            case 2 -> 34;
+            case 3 -> 28;
+            default -> 40; // 2s
+        };
     }
 
     private static int getManaCostForTier(int tier) {
@@ -117,5 +126,30 @@ public class AquaTorrent extends Spell {
                 ticks += 2;
             }
         }.runTaskTimer(MagicForce.getInstance(), 0L, 2L);
+    }
+
+    @Override
+    public void spawnChantingParticles(Player player, Location handLoc, double progress, int elapsed) {
+        // Water droplets spiral in a vortex, spinning faster as charge builds
+        double spinSpeed = 0.15 + progress * 0.45;
+        int streams = 2 + (int) (progress * 3); // 2 → 5 water streams
+        double radius = 0.45 - progress * 0.15; // slightly tightens
+
+        for (int i = 0; i < streams; i++) {
+            double angle = elapsed * spinSpeed + (2 * Math.PI * i / streams);
+            Location dropLoc = handLoc.clone().add(
+                Math.cos(angle) * radius,
+                Math.sin(elapsed * 0.1) * 0.12,
+                Math.sin(angle) * radius
+            );
+            player.getWorld().spawnParticle(Particle.SPLASH, dropLoc, 1, 0.02, 0.02, 0.02, 0);
+            if (i % 2 == 0 && progress > 0.3) {
+                player.getWorld().spawnParticle(Particle.BUBBLE, dropLoc, 1, 0.02, 0.02, 0.02, 0);
+            }
+        }
+        // Dripping water at high charge
+        if (progress > 0.6) {
+            player.getWorld().spawnParticle(Particle.DRIPPING_WATER, handLoc.clone().add(0, 0.1, 0), 1, 0.1, 0, 0.1, 0);
+        }
     }
 }
