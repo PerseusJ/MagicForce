@@ -3,6 +3,8 @@ package com.perseusj.magicforce;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.perseusj.magicforce.commands.AdminCommand;
 import com.perseusj.magicforce.managers.ChantingManager;
+import com.perseusj.magicforce.managers.CooldownManager;
+import com.perseusj.magicforce.managers.ManaManager;
 import com.perseusj.magicforce.managers.PluginManager;
 import com.perseusj.magicforce.managers.TableManager;
 import com.perseusj.magicforce.listeners.PlayerListener;
@@ -22,6 +24,9 @@ public class MagicForce extends JavaPlugin {
         PluginManager.getInstance().initialize();
         ChantingManager.getInstance(); // initialize singleton
 
+        // v1.0.1: load persisted cooldowns and mana before players can interact
+        CooldownManager.getInstance().load();
+
         if (getCommand("magicforce") != null) {
             getCommand("magicforce").setExecutor(new AdminCommand());
         }
@@ -35,7 +40,12 @@ public class MagicForce extends JavaPlugin {
     @Override
     public void onDisable() {
         ChantingManager.getInstance().cleanup();
-        com.perseusj.magicforce.managers.TableManager.getInstance().saveTables();
+        TableManager.getInstance().saveTables();
+
+        // v1.0.1: persist cooldowns and mana so data survives restarts/reloads
+        CooldownManager.getInstance().save();
+        ManaManager.getInstance().saveAll();
+
         getLogger().info("MagicForce has been disabled!");
     }
 }

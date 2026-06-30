@@ -10,15 +10,17 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ChantingManager {
 
@@ -39,7 +41,9 @@ public class ChantingManager {
 
     // ── Per-player state ──────────────────────────────────────────────────────
 
-    private final Map<UUID, ChantState> states = new HashMap<>();
+    // Bug fix: ConcurrentHashMap prevents ConcurrentModificationException when
+    // the per-tick BukkitRunnable and cleanup() access states simultaneously.
+    private final Map<UUID, ChantState> states = new ConcurrentHashMap<>();
 
     private static class ChantState {
         final Spell spell;
@@ -93,7 +97,8 @@ public class ChantingManager {
                     return;
                 }
 
-                // Verify grimoire still in main hand (same object by identity)
+                // Bug fix: compare by PDC grimoire identity (tier) rather than
+                // ItemStack.isSimilar(), which fails when lore changes due to socketing.
                 ItemStack held = player.getInventory().getItemInMainHand();
                 if (!isSameGrimoire(held, s.grimoire)) {
                     cancelChanting(player, true);
@@ -244,10 +249,22 @@ public class ChantingManager {
         };
     }
 
-    /** Compare two ItemStacks as the "same grimoire" (type + meta match). */
+    /**
+     * Bug fix: compare grimoires by PDC identity (GRIMOIRE_TIER_KEY) instead of
+     * ItemStack.isSimilar(). isSimilar() compares lore, so socketing/removing a
+     * scroll mid-charge would make the grimoire appear "different" and cancel the
+     * chant. Comparing by tier PDC key survives lore changes.
+     */
     private static boolean isSameGrimoire(ItemStack a, ItemStack b) {
         if (a == null || b == null) return false;
-        return a.isSimilar(b);
+        if (a.getType() != b.getType()) return false;
+        if (!a.hasItemMeta() || !b.hasItemMeta()) return false;
+        PersistentDataContainer pdcA = a.getItemMeta().getPersistentDataContainer();
+        PersistentDataContainer pdcB = b.getItemMeta().getPersistentDataContainer();
+        Integer tierA = pdcA.get(GrimoireManager.GRIMOIRE_TIER_KEY, PersistentDataType.INTEGER);
+        Integer tierB = pdcB.get(GrimoireManager.GRIMOIRE_TIER_KEY, PersistentDataType.INTEGER);
+        // Both must be grimoires (tierA/tierB not null) and the same tier
+        return tierA != null && tierA.equals(tierB);
     }
 
     /** Remove all active states (call on plugin disable). */

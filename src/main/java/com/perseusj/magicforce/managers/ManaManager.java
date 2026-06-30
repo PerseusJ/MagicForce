@@ -6,10 +6,13 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -88,7 +91,63 @@ public class ManaManager {
                 new TextComponent(Utils.colorize(bar.toString())));
     }
 
+    /** Remove the player's mana from the in-memory map (call after saving on quit). */
     public void resetMana(UUID uuid) {
         manaMap.remove(uuid);
+    }
+
+    // ── Persistence ───────────────────────────────────────────────────────────
+
+    private File getManaFile() {
+        return new File(MagicForce.getInstance().getDataFolder(), "mana.yml");
+    }
+
+    /**
+     * Load saved mana for a player from mana.yml.
+     * Returns MAX_MANA if no saved value exists (e.g. first join).
+     */
+    public double loadMana(UUID uuid) {
+        File file = getManaFile();
+        if (!file.exists()) return MAX_MANA;
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        return config.getDouble(uuid.toString(), MAX_MANA);
+    }
+
+    /**
+     * Persist a single player's current mana to mana.yml.
+     * Called on player quit so the value is not lost between sessions.
+     */
+    public void saveMana(UUID uuid, double amount) {
+        File file = getManaFile();
+        YamlConfiguration config = file.exists()
+                ? YamlConfiguration.loadConfiguration(file)
+                : new YamlConfiguration();
+        config.set(uuid.toString(), amount);
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            MagicForce.getInstance().getLogger().severe(
+                "[ManaManager] Failed to save mana.yml: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Persist all currently online players' mana at once.
+     * Called on plugin disable to cover crash/reload scenarios.
+     */
+    public void saveAll() {
+        File file = getManaFile();
+        YamlConfiguration config = file.exists()
+                ? YamlConfiguration.loadConfiguration(file)
+                : new YamlConfiguration();
+        for (Map.Entry<UUID, Double> entry : manaMap.entrySet()) {
+            config.set(entry.getKey().toString(), entry.getValue());
+        }
+        try {
+            config.save(file);
+        } catch (IOException e) {
+            MagicForce.getInstance().getLogger().severe(
+                "[ManaManager] Failed to save mana.yml on shutdown: " + e.getMessage());
+        }
     }
 }

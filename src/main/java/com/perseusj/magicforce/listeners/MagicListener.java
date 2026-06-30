@@ -1,6 +1,7 @@
 package com.perseusj.magicforce.listeners;
 
 import com.perseusj.magicforce.managers.ChantingManager;
+import com.perseusj.magicforce.managers.CooldownManager;
 import com.perseusj.magicforce.managers.GrimoireManager;
 import com.perseusj.magicforce.managers.InscriptionManager;
 import com.perseusj.magicforce.managers.ManaManager;
@@ -9,10 +10,13 @@ import com.perseusj.magicforce.managers.TableManager;
 import com.perseusj.magicforce.spells.Spell;
 import com.perseusj.magicforce.spells.SpellRegistry;
 import com.perseusj.magicforce.utils.Utils;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,7 +35,6 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.*;
 
 public class MagicListener implements Listener {
-    private final Map<UUID, Map<String, Long>> cooldowns = new HashMap<>();
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
@@ -71,9 +74,9 @@ public class MagicListener implements Listener {
                 // Fire the charged spell; cooldown is set inside fireSpell
                 Spell spell = ChantingManager.getInstance().getCurrentSpell(player);
                 if (spell != null) {
-                    if (checkCooldown(player, spell)) {
+                    if (CooldownManager.getInstance().checkCooldown(player, spell)) {
                         ChantingManager.getInstance().fireSpell(player);
-                        setCooldown(player, spell);
+                        CooldownManager.getInstance().setCooldown(player, spell);
                     } else {
                         // Cooldown message shown by checkCooldown; cancel charge
                         ChantingManager.getInstance().cancelChanting(player, false);
@@ -344,31 +347,55 @@ public class MagicListener implements Listener {
         }
     }
 
+    /**
+     * Fix: inscription tables exploded by block explosions (e.g. beds in Nether/End)
+     * must be unregistered and drop the custom item instead of a raw enchanting table.
+     */
+    @EventHandler
+    public void onBlockExplode(BlockExplodeEvent event) {
+        handleExplodedBlocks(event.blockList());
+    }
 
+    /**
+     * Fix: inscription tables exploded by entity explosions (TNT, Creeper, etc.)
+     * must be unregistered and drop the custom item.
+     */
+    @EventHandler
+    public void onEntityExplode(EntityExplodeEvent event) {
+        handleExplodedBlocks(event.blockList());
+    }
+
+    /**
+     * Shared helper: iterates an explosion's block list, removes any registered
+     * inscription tables from the list (prevents vanilla drop), drops the custom
+     * item naturally, and unregisters the table.
+     */
+    private void handleExplodedBlocks(List<org.bukkit.block.Block> blockList) {
+        Iterator<org.bukkit.block.Block> it = blockList.iterator();
+        while (it.hasNext()) {
+            org.bukkit.block.Block block = it.next();
+            if (block.getType() == Material.ENCHANTING_TABLE
+                    && TableManager.getInstance().isRegisteredTable(block.getLocation())) {
+                it.remove(); // prevent vanilla enchanting-table drop
+                Location loc = block.getLocation();
+                block.getWorld().dropItemNaturally(loc,
+                        GrimoireManager.getInstance().createScrollInscriptionTable());
+                TableManager.getInstance().unregisterTable(loc);
+            }
+        }
+    }
+
+    /**
+     * Fix: raw scroll casts now go through CooldownManager so they cannot
+     * be spammed at zero cooldown.
+     */
     private void castRawScroll(Player player, ItemStack scroll, String spellId) {
         Spell spell = SpellRegistry.getById(spellId);
         if (spell == null) return;
-
+        if (!CooldownManager.getInstance().checkCooldown(player, spell)) return;
         spell.cast(player);
+        CooldownManager.getInstance().setCooldown(player, spell);
         scroll.setAmount(scroll.getAmount() - 1);
         player.sendMessage(Utils.colorize("&6✦ Consumed &f" + spell.getName()));
-    }
-
-    private boolean checkCooldown(Player player, Spell spell) {
-        Map<String, Long> playerCooldowns = cooldowns.get(player.getUniqueId());
-        if (playerCooldowns == null) return true;
-        Long expires = playerCooldowns.get(spell.getId());
-        if (expires == null) return true;
-        if (System.currentTimeMillis() < expires) {
-            long remaining = (expires - System.currentTimeMillis()) / 1000;
-            player.sendMessage(Utils.colorize("&cCooldown: " + remaining + "s"));
-            return false;
-        }
-        return true;
-    }
-
-    private void setCooldown(Player player, Spell spell) {
-        cooldowns.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>())
-                .put(spell.getId(), System.currentTimeMillis() + (long) (spell.getCooldown() * 1000));
     }
 }

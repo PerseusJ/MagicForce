@@ -36,7 +36,8 @@ public class ScoreboardManager {
         int tier = GrimoireManager.getInstance().getGrimoireTier(item);
         if (tier == 0) return;
         int capacity = GrimoireManager.getInstance().getCapacity(tier);
-        int current = getActiveSlot(player);
+        // Bug fix: clamp stale active slot before cycling
+        int current = Math.min(getActiveSlot(player), Math.max(0, capacity - 1));
         int next = (current + direction + capacity) % capacity;
         setActiveSlot(player, next);
     }
@@ -56,7 +57,13 @@ public class ScoreboardManager {
 
         List<String> scrolls = GrimoireManager.getInstance().getSocketedScrolls(item);
         int capacity = GrimoireManager.getInstance().getCapacity(tier);
+
+        // Bug fix: clamp the stored active slot so it can never exceed the list size
         int active = getActiveSlot(player);
+        if (active >= capacity || active >= scrolls.size()) {
+            active = 0;
+            activeSlots.put(player.getUniqueId(), 0);
+        }
 
         for (int i = 0; i < capacity; i++) {
             String prefix = (i == active) ? "&a▸ &f" : "  &7";
