@@ -1,5 +1,5 @@
 main: com.perseusj.magicforce.MagicForce
-version: 1.0.0-SNAPSHOT
+version: 1.0.2-SNAPSHOT
 name: MagicForce
 author: PerseusJ
 api-version: 1.21
@@ -8,7 +8,7 @@ commands:
   magicforce:
     description: Admin commands for MagicForce
     aliases: [mf]
-    usage: /<command> give <inscriptiontable|grimoire|scroll> [player] [args]
+    usage: /<command> <give|reload> ...
 
 permissions:
   magicforce.admin:

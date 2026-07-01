@@ -1,0 +1,247 @@
+# =====================================================================
+#  MagicForce — main configuration
+# ---------------------------------------------------------------------
+#  Every value here ships with a default that matches the original
+#  hardcoded behavior. Server owners can tune them freely without
+#  recompiling. Invalid values (negative mana, charge time < 1, ...)
+#  will be rejected at load time and the corresponding default will
+#  be used instead, with a warning logged to the server console.
+# =====================================================================
+
+# ── Mana system ──────────────────────────────────────────────────────
+mana:
+  # Maximum mana a player can hold.
+  max: 100.0
+
+  # Mana regenerated per second while holding a grimoire in the main hand.
+  grimoire-regen: 5.0
+
+  # Mana regenerated per second with no grimoire equipped.
+  normal-regen: 2.0
+
+  # How often (in ticks, 20 = 1s) the action-bar mana HUD is refreshed.
+  hud-interval: 10
+
+# ── Chanting ─────────────────────────────────────────────────────────
+chanting:
+  # How many ticks a fully-charged spell can be held before it fizzles.
+  # 100 ticks = 5 seconds.
+  hold-window-ticks: 100
+
+  # How often (in ticks) the looping charge sound is replayed.
+  loop-sound-interval: 10
+
+# ── Inscription tables ───────────────────────────────────────────────
+inscription:
+  # XP-level cost to inscribe a scroll of the given tier.
+  tier-costs:
+    1: 5
+    2: 15
+    3: 30
+
+# ── Grimoires ────────────────────────────────────────────────────────
+grimoire:
+  # Number of scroll slots per grimoire tier.
+  capacities:
+    1: 2
+    2: 4
+    3: 6
+
+# ── Spells ───────────────────────────────────────────────────────────
+# Per-spell, per-tier values. Each spell block contains:
+#   tier_<N>:
+#     mana-cost:        mana required to cast
+#     cooldown:         cooldown in seconds
+#     charge-time:      charge time in ticks (20 = 1s)
+#     damage:           base damage for offensive spells (0 for non-damaging)
+#     <spell-specific>  extra fields consumed by individual spells
+spells:
+  ignition_dart:
+    tier_1:
+      mana-cost: 15
+      cooldown: 3.0
+      charge-time: 30
+      damage: 3.0
+      fire-ticks: 80
+      speed: 1.5
+      max-ticks: 40
+    tier_2:
+      mana-cost: 25
+      cooldown: 2.0
+      charge-time: 26
+      damage: 4.5
+      fire-ticks: 120
+      speed: 1.5
+      max-ticks: 40
+    tier_3:
+      mana-cost: 40
+      cooldown: 1.0
+      charge-time: 22
+      damage: 5.25
+      fire-ticks: 140
+      speed: 1.5
+      max-ticks: 40
+
+  combustion_blast:
+    tier_1:
+      mana-cost: 30
+      cooldown: 12.0
+      charge-time: 60
+      damage: 4.0
+      fire-ticks: 80
+      radius: 4.0
+      knockback-multiplier: 1.0
+    tier_2:
+      mana-cost: 45
+      cooldown: 9.0
+      charge-time: 50
+      damage: 6.0
+      fire-ticks: 120
+      radius: 4.0
+      knockback-multiplier: 1.6
+    tier_3:
+      mana-cost: 60
+      cooldown: 6.0
+      charge-time: 40
+      damage: 7.0
+      fire-ticks: 160
+      radius: 4.0
+      knockback-multiplier: 2.2
+
+  aqua_torrent:
+    tier_1:
+      mana-cost: 20
+      cooldown: 5.0
+      charge-time: 40
+      damage: 0.0
+      knockback-multiplier: 1.0
+      slowness-duration-ticks: 60
+      slowness-amplifier: 1
+    tier_2:
+      mana-cost: 35
+      cooldown: 4.0
+      charge-time: 34
+      damage: 0.0
+      knockback-multiplier: 1.5
+      slowness-duration-ticks: 100
+      slowness-amplifier: 1
+    tier_3:
+      mana-cost: 50
+      cooldown: 3.0
+      charge-time: 28
+      damage: 0.0
+      knockback-multiplier: 2.0
+      slowness-duration-ticks: 140
+      slowness-amplifier: 2
+
+  cleansing_tide:
+    tier_1:
+      mana-cost: 40
+      cooldown: 20.0
+      charge-time: 50
+      damage: 0.0
+      healing-amount: 8.0
+      regen-duration-ticks: 40
+      regen-amplifier: 0
+    tier_2:
+      mana-cost: 60
+      cooldown: 15.0
+      charge-time: 42
+      damage: 0.0
+      healing-amount: 12.0
+      regen-duration-ticks: 80
+      regen-amplifier: 1
+    tier_3:
+      mana-cost: 90
+      cooldown: 10.0
+      charge-time: 34
+      damage: 0.0
+      healing-amount: 20.0
+      regen-duration-ticks: 120
+      regen-amplifier: 2
+
+  earthen_rampart:
+    tier_1:
+      mana-cost: 25
+      cooldown: 15.0
+      charge-time: 40
+      damage: 0.0
+      wall-duration-ticks: 100
+    tier_2:
+      mana-cost: 40
+      cooldown: 12.0
+      charge-time: 34
+      damage: 0.0
+      wall-duration-ticks: 140
+    tier_3:
+      mana-cost: 55
+      cooldown: 10.0
+      charge-time: 28
+      damage: 0.0
+      wall-duration-ticks: 200
+
+  tremor_smash:
+    tier_1:
+      mana-cost: 35
+      cooldown: 10.0
+      charge-time: 50
+      damage: 5.0
+      radius: 5.0
+    tier_2:
+      mana-cost: 50
+      cooldown: 8.0
+      charge-time: 42
+      damage: 7.5
+      radius: 6.5
+    tier_3:
+      mana-cost: 70
+      cooldown: 6.0
+      charge-time: 34
+      damage: 10.0
+      radius: 8.0
+
+  gale_force:
+    tier_1:
+      mana-cost: 15
+      cooldown: 6.0
+      charge-time: 30
+      damage: 0.0
+      radius: 5.0
+      knockback-multiplier: 2.0
+    tier_2:
+      mana-cost: 25
+      cooldown: 4.5
+      charge-time: 26
+      damage: 0.0
+      radius: 6.5
+      knockback-multiplier: 2.5
+    tier_3:
+      mana-cost: 40
+      cooldown: 3.5
+      charge-time: 22
+      damage: 0.0
+      radius: 8.0
+      knockback-multiplier: 3.2
+
+  zephyr_blade:
+    tier_1:
+      mana-cost: 25
+      cooldown: 4.0
+      charge-time: 30
+      damage: 5.0
+      speed: 3.0
+      max-ticks: 20
+    tier_2:
+      mana-cost: 35
+      cooldown: 3.0
+      charge-time: 26
+      damage: 7.0
+      speed: 3.0
+      max-ticks: 20
+    tier_3:
+      mana-cost: 50
+      cooldown: 2.0
+      charge-time: 22
+      damage: 9.5
+      speed: 3.0
+      max-ticks: 20

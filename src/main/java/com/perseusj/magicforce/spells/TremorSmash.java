@@ -15,12 +15,14 @@ import org.bukkit.util.Vector;
 import java.util.List;
 
 public class TremorSmash extends Spell {
+    private static final String SPELL_ID_BASE = "tremor_smash";
+
     private final double maxRadius;
     private final double damage;
 
     public TremorSmash(int tier) {
         super(
-            tier == 1 ? "tremor_smash" : "tremor_smash_" + tier,
+            tier == 1 ? SPELL_ID_BASE : SPELL_ID_BASE + "_" + tier,
             "Tremor Smash" + (tier == 1 ? "" : " " + Utils.toRoman(tier)),
             SpellElement.EARTH,
             tier,
@@ -33,43 +35,28 @@ public class TremorSmash extends Spell {
     }
 
     private static int getChargeTimeForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 42;
-            case 3 -> 34;
-            default -> 50; // 2.5s
-        };
+        return configInt(SPELL_ID_BASE, tier, "charge-time",
+            tier == 2 ? 42 : tier == 3 ? 34 : 50);
     }
 
     private static int getManaCostForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 50;
-            case 3 -> 70;
-            default -> 35;
-        };
+        return configInt(SPELL_ID_BASE, tier, "mana-cost",
+            tier == 2 ? 50 : tier == 3 ? 70 : 35);
     }
 
     private static double getCooldownForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 8.0;
-            case 3 -> 6.0;
-            default -> 10.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "cooldown",
+            tier == 2 ? 8.0 : tier == 3 ? 6.0 : 10.0);
     }
 
     private static double getRadiusForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 6.5;
-            case 3 -> 8.0;
-            default -> 5.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "radius",
+            tier == 2 ? 6.5 : tier == 3 ? 8.0 : 5.0);
     }
 
     private static double getDamageForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 7.5;
-            case 3 -> 10.0;
-            default -> 5.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "damage",
+            tier == 2 ? 7.5 : tier == 3 ? 10.0 : 5.0);
     }
 
     @Override

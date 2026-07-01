@@ -12,12 +12,14 @@ import org.bukkit.util.Vector;
 import java.util.List;
 
 public class GaleForce extends Spell {
+    private static final String SPELL_ID_BASE = "gale_force";
+
     private final double maxRadius;
     private final double knockbackMultiplier;
 
     public GaleForce(int tier) {
         super(
-            tier == 1 ? "gale_force" : "gale_force_" + tier,
+            tier == 1 ? SPELL_ID_BASE : SPELL_ID_BASE + "_" + tier,
             "Gale Force" + (tier == 1 ? "" : " " + Utils.toRoman(tier)),
             SpellElement.WIND,
             tier,
@@ -30,43 +32,28 @@ public class GaleForce extends Spell {
     }
 
     private static int getChargeTimeForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 26;
-            case 3 -> 22;
-            default -> 30; // 1.5s
-        };
+        return configInt(SPELL_ID_BASE, tier, "charge-time",
+            tier == 2 ? 26 : tier == 3 ? 22 : 30);
     }
 
     private static int getManaCostForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 25;
-            case 3 -> 40;
-            default -> 15;
-        };
+        return configInt(SPELL_ID_BASE, tier, "mana-cost",
+            tier == 2 ? 25 : tier == 3 ? 40 : 15);
     }
 
     private static double getCooldownForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 4.5;
-            case 3 -> 3.5;
-            default -> 6.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "cooldown",
+            tier == 2 ? 4.5 : tier == 3 ? 3.5 : 6.0);
     }
 
     private static double getRadiusForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 6.5;
-            case 3 -> 8.0;
-            default -> 5.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "radius",
+            tier == 2 ? 6.5 : tier == 3 ? 8.0 : 5.0);
     }
 
     private static double getKnockbackMultiplierForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 2.5;
-            case 3 -> 3.2;
-            default -> 2.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "knockback-multiplier",
+            tier == 2 ? 2.5 : tier == 3 ? 3.2 : 2.0);
     }
 
     @Override

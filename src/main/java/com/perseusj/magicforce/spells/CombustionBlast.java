@@ -14,15 +14,16 @@ import org.bukkit.util.Vector;
 import java.util.List;
 
 public class CombustionBlast extends Spell {
-    private static final double RADIUS = 4.0;
+    private static final String SPELL_ID_BASE = "combustion_blast";
 
     private final double damage;
     private final int fireTicks;
     private final double knockbackMultiplier;
+    private final double radius;
 
     public CombustionBlast(int tier) {
         super(
-            tier == 1 ? "combustion_blast" : "combustion_blast_" + tier,
+            tier == 1 ? SPELL_ID_BASE : SPELL_ID_BASE + "_" + tier,
             "Combustion Blast" + (tier == 1 ? "" : " " + Utils.toRoman(tier)),
             SpellElement.FIRE,
             tier,
@@ -33,54 +34,41 @@ public class CombustionBlast extends Spell {
         this.damage = getDamageForTier(tier);
         this.fireTicks = getFireTicksForTier(tier);
         this.knockbackMultiplier = getKnockbackMultiplierForTier(tier);
+        this.radius = getRadiusForTier(tier);
     }
 
     private static int getChargeTimeForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 50;
-            case 3 -> 40;
-            default -> 60; // 3s
-        };
+        return configInt(SPELL_ID_BASE, tier, "charge-time",
+            tier == 2 ? 50 : tier == 3 ? 40 : 60);
     }
 
     private static int getManaCostForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 45;
-            case 3 -> 60;
-            default -> 30;
-        };
+        return configInt(SPELL_ID_BASE, tier, "mana-cost",
+            tier == 2 ? 45 : tier == 3 ? 60 : 30);
     }
 
     private static double getCooldownForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 9.0;
-            case 3 -> 6.0;
-            default -> 12.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "cooldown",
+            tier == 2 ? 9.0 : tier == 3 ? 6.0 : 12.0);
     }
 
     private static double getDamageForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 6.0;
-            case 3 -> 7.0;
-            default -> 4.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "damage",
+            tier == 2 ? 6.0 : tier == 3 ? 7.0 : 4.0);
     }
 
     private static int getFireTicksForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 120; // 6s
-            case 3 -> 160; // 8s
-            default -> 80;  // 4s
-        };
+        return configInt(SPELL_ID_BASE, tier, "fire-ticks",
+            tier == 2 ? 120 : tier == 3 ? 160 : 80);
     }
 
     private static double getKnockbackMultiplierForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 1.6;
-            case 3 -> 2.2;
-            default -> 1.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "knockback-multiplier",
+            tier == 2 ? 1.6 : tier == 3 ? 2.2 : 1.0);
+    }
+
+    private static double getRadiusForTier(int tier) {
+        return configDouble(SPELL_ID_BASE, tier, "radius", 4.0);
     }
 
     @Override
@@ -90,22 +78,23 @@ public class CombustionBlast extends Spell {
         world.createExplosion(origin, 0, false, false);
         world.playSound(origin, org.bukkit.Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 0.8f);
 
-        List<Entity> nearby = player.getNearbyEntities(RADIUS, RADIUS, RADIUS);
+        List<Entity> nearby = player.getNearbyEntities(radius, radius, radius);
         for (Entity entity : nearby) {
             if (entity.equals(player)) continue;
             Vector toEntity = entity.getLocation().toVector().subtract(player.getLocation().toVector());
             if (toEntity.lengthSquared() == 0) toEntity = new Vector(1, 0, 0);
-            
+
             Vector knockback = toEntity.normalize().multiply(1.5 * knockbackMultiplier);
             knockback.setY(0.5);
             entity.setVelocity(knockback);
             entity.setFireTicks(fireTicks);
-            
+
             if (entity instanceof LivingEntity target) {
                 target.damage(damage, player);
             }
         }
 
+        final double radiusFinal = radius;
         new BukkitRunnable() {
             int ticks = 0;
 
@@ -115,12 +104,12 @@ public class CombustionBlast extends Spell {
                     cancel();
                     return;
                 }
-                double radius = 1.0 + ticks * (RADIUS / 4.0);
-                int particles = (int) (radius * 12);
+                double r = 1.0 + ticks * (radiusFinal / 4.0);
+                int particles = (int) (r * 12);
                 for (int i = 0; i < particles; i++) {
                     double angle = 2 * Math.PI * i / particles;
-                    double x = Math.cos(angle) * radius;
-                    double z = Math.sin(angle) * radius;
+                    double x = Math.cos(angle) * r;
+                    double z = Math.sin(angle) * r;
                     Location ringLoc = origin.clone().add(x, 0, z);
                     world.spawnParticle(Particle.FLAME, ringLoc, 1, 0.1, 0.1, 0.1, 0);
                     if (ticks < 3) {
@@ -133,9 +122,9 @@ public class CombustionBlast extends Spell {
                 if (ticks < 3) {
                     for (int i = 0; i < 3; i++) {
                         Location sparkLoc = origin.clone().add(
-                            (Math.random() - 0.5) * radius,
+                            (Math.random() - 0.5) * r,
                             Math.random() * 0.5,
-                            (Math.random() - 0.5) * radius
+                            (Math.random() - 0.5) * r
                         );
                         world.spawnParticle(Particle.LAVA, sparkLoc, 1, 0, 0, 0, 0);
                     }

@@ -13,17 +13,17 @@ import org.bukkit.util.Vector;
 import java.util.List;
 
 public class ZephyrBlade extends Spell {
-    private static final double SPEED = 3.0;
+    private static final String SPELL_ID_BASE = "zephyr_blade";
     private static final int SUB_STEPS = 3;
-    private static final double SUB_STEP_SIZE = SPEED / SUB_STEPS;
-    private static final int MAX_TICKS = 20;
     private static final double ENTITY_CHECK_RADIUS = 1.0;
 
     private final double damage;
+    private final double speed;
+    private final int maxTicks;
 
     public ZephyrBlade(int tier) {
         super(
-            tier == 1 ? "zephyr_blade" : "zephyr_blade_" + tier,
+            tier == 1 ? SPELL_ID_BASE : SPELL_ID_BASE + "_" + tier,
             "Zephyr Blade" + (tier == 1 ? "" : " " + Utils.toRoman(tier)),
             SpellElement.WIND,
             tier,
@@ -32,49 +32,49 @@ public class ZephyrBlade extends Spell {
             getChargeTimeForTier(tier)
         );
         this.damage = getDamageForTier(tier);
+        this.speed = getSpeedForTier(tier);
+        this.maxTicks = getMaxTicksForTier(tier);
     }
 
     private static int getChargeTimeForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 26;
-            case 3 -> 22;
-            default -> 30; // 1.5s
-        };
+        return configInt(SPELL_ID_BASE, tier, "charge-time",
+            tier == 2 ? 26 : tier == 3 ? 22 : 30);
     }
 
     private static int getManaCostForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 35;
-            case 3 -> 50;
-            default -> 25;
-        };
+        return configInt(SPELL_ID_BASE, tier, "mana-cost",
+            tier == 2 ? 35 : tier == 3 ? 50 : 25);
     }
 
     private static double getCooldownForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 3.0;
-            case 3 -> 2.0;
-            default -> 4.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "cooldown",
+            tier == 2 ? 3.0 : tier == 3 ? 2.0 : 4.0);
     }
 
     private static double getDamageForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 7.0;
-            case 3 -> 9.5;
-            default -> 5.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "damage",
+            tier == 2 ? 7.0 : tier == 3 ? 9.5 : 5.0);
+    }
+
+    private static double getSpeedForTier(int tier) {
+        return configDouble(SPELL_ID_BASE, tier, "speed", 3.0);
+    }
+
+    private static int getMaxTicksForTier(int tier) {
+        return configInt(SPELL_ID_BASE, tier, "max-ticks", 20);
     }
 
     @Override
     public void cast(Player player) {
         Location eyeLoc = player.getEyeLocation();
         Vector direction = eyeLoc.getDirection().normalize();
-        
+
         Vector right = new Vector(-direction.getZ(), 0, direction.getX()).normalize().multiply(0.4);
         Location origin = eyeLoc.clone().add(0, -0.5, 0).add(right);
 
         player.getWorld().playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.5f);
+
+        final double subStepSize = speed / SUB_STEPS;
 
         new BukkitRunnable() {
             int ticks = 0;
@@ -82,14 +82,14 @@ public class ZephyrBlade extends Spell {
 
             @Override
             public void run() {
-                if (ticks >= MAX_TICKS) {
+                if (ticks >= maxTicks) {
                     spawnImpact(player, current);
                     cancel();
                     return;
                 }
 
                 for (int step = 0; step < SUB_STEPS; step++) {
-                    current.add(direction.clone().multiply(SUB_STEP_SIZE));
+                    current.add(direction.clone().multiply(subStepSize));
 
                     spawnTrail(player, current);
 

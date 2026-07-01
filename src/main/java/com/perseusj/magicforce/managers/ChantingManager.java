@@ -24,12 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ChantingManager {
 
-    /** How long (ticks) a fully-charged spell can be held before it fizzles. */
-    private static final int HOLD_WINDOW_TICKS = 100; // 5 seconds
-
-    /** How often (ticks) to play the looping charging sound. */
-    private static final int LOOP_SOUND_INTERVAL = 10;
-
     private static ChantingManager instance;
 
     public static ChantingManager getInstance() {
@@ -121,7 +115,7 @@ public class ChantingManager {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 5, 1, true, false, false));
 
                     // Looping charge sound (pitch rises with progress)
-                    if (s.elapsed % LOOP_SOUND_INTERVAL == 0) {
+                    if (s.elapsed % ConfigManager.getInstance().getLoopSoundInterval() == 0) {
                         player.playSound(player.getLocation(), s.spell.getChantingLoopSound(),
                             0.5f, 1.0f + (float) progress * 0.4f);
                     }
@@ -155,7 +149,7 @@ public class ChantingManager {
                     s.bar.setProgress(Math.max(0.0, Math.min(1.0, pulse)));
 
                     // Timeout fizzle
-                    if (heldTicks >= HOLD_WINDOW_TICKS) {
+                    if (heldTicks >= ConfigManager.getInstance().getHoldWindowTicks()) {
                         player.sendMessage(Utils.colorize("&7The spell dissipated..."));
                         player.playSound(player.getLocation(), s.spell.getChantingCancelSound(), 0.6f, 0.8f);
                         cleanupState(player);

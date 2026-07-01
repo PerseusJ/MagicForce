@@ -13,16 +13,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ManaManager {
     private static ManaManager instance;
-    private final Map<UUID, Double> manaMap = new HashMap<>();
-    private static final double MAX_MANA = 100.0;
-    private static final double GRIMOIRE_REGEN = 5.0;
-    private static final double NORMAL_REGEN = 2.0;
+    private final Map<UUID, Double> manaMap = new ConcurrentHashMap<>();
 
     public static ManaManager getInstance() {
         if (instance == null) instance = new ManaManager();
@@ -30,12 +27,16 @@ public class ManaManager {
     }
 
     public void initialize() {
+        ConfigManager cfg = ConfigManager.getInstance();
+
         new BukkitRunnable() {
             @Override
             public void run() {
+                double grimoireRegen = cfg.getGrimoireRegen();
+                double normalRegen = cfg.getNormalRegen();
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    double regen = isHoldingGrimoire(player) ? GRIMOIRE_REGEN : NORMAL_REGEN;
-                    addMana(player, regen);
+                    double regen = isHoldingGrimoire(player) ? grimoireRegen : normalRegen;
+                    if (regen > 0) addMana(player, regen);
                 }
             }
         }.runTaskTimer(MagicForce.getInstance(), 20L, 20L);
@@ -47,15 +48,16 @@ public class ManaManager {
                     sendManaHUD(player);
                 }
             }
-        }.runTaskTimer(MagicForce.getInstance(), 0L, 10L);
+        }.runTaskTimer(MagicForce.getInstance(), 0L, Math.max(1L, (long) cfg.getManaHudInterval()));
     }
 
     public double getMana(Player player) {
-        return manaMap.getOrDefault(player.getUniqueId(), MAX_MANA);
+        return manaMap.getOrDefault(player.getUniqueId(), ConfigManager.getInstance().getManaMax());
     }
 
     public void setMana(Player player, double amount) {
-        manaMap.put(player.getUniqueId(), Math.max(0, Math.min(MAX_MANA, amount)));
+        double max = ConfigManager.getInstance().getManaMax();
+        manaMap.put(player.getUniqueId(), Math.max(0, Math.min(max, amount)));
     }
 
     public void addMana(Player player, double amount) {
@@ -78,14 +80,18 @@ public class ManaManager {
 
     private void sendManaHUD(Player player) {
         double mana = getMana(player);
-        int fullBlocks = (int) (mana / 10);
-        int emptyBlocks = 10 - fullBlocks;
+        double max = ConfigManager.getInstance().getManaMax();
+        int slots = 10;
+        int fullBlocks = (int) (mana / max * slots);
+        if (fullBlocks < 0) fullBlocks = 0;
+        if (fullBlocks > slots) fullBlocks = slots;
+        int emptyBlocks = slots - fullBlocks;
 
         StringBuilder bar = new StringBuilder();
         bar.append("&3Mana: &b");
         bar.append("▰".repeat(Math.max(0, fullBlocks)));
         bar.append("&7▱".repeat(Math.max(0, emptyBlocks)));
-        bar.append(" &3[").append((int) mana).append("/100]");
+        bar.append(" &3[").append((int) mana).append("/").append((int) max).append("]");
 
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
                 new TextComponent(Utils.colorize(bar.toString())));
@@ -104,13 +110,13 @@ public class ManaManager {
 
     /**
      * Load saved mana for a player from mana.yml.
-     * Returns MAX_MANA if no saved value exists (e.g. first join).
+     * Returns current mana.max if no saved value exists (e.g. first join).
      */
     public double loadMana(UUID uuid) {
         File file = getManaFile();
-        if (!file.exists()) return MAX_MANA;
+        if (!file.exists()) return ConfigManager.getInstance().getManaMax();
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-        return config.getDouble(uuid.toString(), MAX_MANA);
+        return config.getDouble(uuid.toString(), ConfigManager.getInstance().getManaMax());
     }
 
     /**

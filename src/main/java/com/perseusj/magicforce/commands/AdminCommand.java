@@ -1,5 +1,6 @@
 package com.perseusj.magicforce.commands;
 
+import com.perseusj.magicforce.managers.ConfigManager;
 import com.perseusj.magicforce.managers.GrimoireManager;
 import com.perseusj.magicforce.spells.Spell;
 import com.perseusj.magicforce.spells.SpellRegistry;
@@ -24,12 +25,30 @@ public class AdminCommand implements TabExecutor {
             return true;
         }
 
-        if (args.length < 2) {
-            sender.sendMessage(Utils.colorize("&cUsage: /mf give <inscriptiontable|grimoire|scroll> [player] [args]"));
+        if (args.length < 1) {
+            sender.sendMessage(Utils.colorize("&cUsage: /mf <give|reload> ..."));
             return true;
         }
 
-        if (!args[0].equalsIgnoreCase("give")) {
+        String sub = args[0].toLowerCase();
+
+        if (sub.equals("reload")) {
+            // v1.0.2: re-read config.yml from disk and re-validate.
+            ConfigManager.getInstance().reload();
+            sender.sendMessage(Utils.colorize("&aConfiguration reloaded."));
+            return true;
+        }
+
+        if (sub.equals("give")) {
+            return handleGive(sender, args);
+        }
+
+        sender.sendMessage(Utils.colorize("&cUsage: /mf <give|reload> ..."));
+        return true;
+    }
+
+    private boolean handleGive(CommandSender sender, String[] args) {
+        if (args.length < 2) {
             sender.sendMessage(Utils.colorize("&cUsage: /mf give <inscriptiontable|grimoire|scroll> [player] [args]"));
             return true;
         }
@@ -114,24 +133,30 @@ public class AdminCommand implements TabExecutor {
         if (!sender.hasPermission("magicforce.admin")) return new ArrayList<>();
 
         if (args.length == 1) {
-            return List.of("give");
+            return List.of("give", "reload");
         }
 
-        if (args.length == 2) {
+        if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
             return List.of("inscriptiontable", "grimoire", "scroll");
         }
 
-        if (args.length == 3) {
-            return switch (args[1].toLowerCase()) {
-                case "grimoire" -> List.of("1", "2", "3");
-                case "scroll" -> getSpellNamesList();
-                case "inscriptiontable" -> null; // returns online player names
-                default -> new ArrayList<>();
-            };
+        if (args.length == 2 && args[0].equalsIgnoreCase("reload")) {
+            return new ArrayList<>();
         }
 
-        if (args.length == 4 && (args[1].equalsIgnoreCase("grimoire") || args[1].equalsIgnoreCase("scroll"))) {
-            return null; // returns online player names
+        if (args.length >= 3 && args[0].equalsIgnoreCase("give")) {
+            if (args.length == 3) {
+                return switch (args[1].toLowerCase()) {
+                    case "grimoire" -> List.of("1", "2", "3");
+                    case "scroll" -> getSpellNamesList();
+                    case "inscriptiontable" -> null; // returns online player names
+                    default -> new ArrayList<>();
+                };
+            }
+
+            if (args.length == 4 && (args[1].equalsIgnoreCase("grimoire") || args[1].equalsIgnoreCase("scroll"))) {
+                return null; // returns online player names
+            }
         }
 
         return new ArrayList<>();

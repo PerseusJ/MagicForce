@@ -39,9 +39,9 @@ public class InscriptionManager {
         inv.setItem(10, new ItemStack(Material.PAPER));
         inv.setItem(12, new ItemStack(Material.INK_SAC));
 
-        inv.setItem(20, createInscribeButton("Tier 1", "&aInscribe Tier 1 &7(5 Levels)", 1, 5));
-        inv.setItem(22, createInscribeButton("Tier 2", "&bInscribe Tier 2 &7(15 Levels)", 2, 15));
-        inv.setItem(24, createInscribeButton("Tier 3", "&dInscribe Tier 3 &7(30 Levels)", 3, 30));
+        inv.setItem(20, createInscribeButton("Tier 1", "&aInscribe Tier 1 &7(" + ConfigManager.getInstance().getTierCost(1) + " Levels)", 1, ConfigManager.getInstance().getTierCost(1)));
+        inv.setItem(22, createInscribeButton("Tier 2", "&bInscribe Tier 2 &7(" + ConfigManager.getInstance().getTierCost(2) + " Levels)", 2, ConfigManager.getInstance().getTierCost(2)));
+        inv.setItem(24, createInscribeButton("Tier 3", "&dInscribe Tier 3 &7(" + ConfigManager.getInstance().getTierCost(3) + " Levels)", 3, ConfigManager.getInstance().getTierCost(3)));
 
         inv.setItem(26, createCloseButton());
 
@@ -94,9 +94,9 @@ public class InscriptionManager {
         int slot = event.getRawSlot();
 
         if (title.equals(INSCRIPTION_TITLE)) {
-            if (slot == 20) tryInscribe(player, 1, 5);
-            else if (slot == 22) tryInscribe(player, 2, 15);
-            else if (slot == 24) tryInscribe(player, 3, 30);
+            if (slot == 20) tryInscribe(player, 1, ConfigManager.getInstance().getTierCost(1));
+            else if (slot == 22) tryInscribe(player, 2, ConfigManager.getInstance().getTierCost(2));
+            else if (slot == 24) tryInscribe(player, 3, ConfigManager.getInstance().getTierCost(3));
             else if (slot == 26) player.closeInventory();
         } else if (title.startsWith(TIER_SELECTION_PREFIX)) {
             handleTierSelectionClick(event, player, slot);

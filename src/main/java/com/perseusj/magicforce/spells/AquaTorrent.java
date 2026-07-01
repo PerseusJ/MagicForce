@@ -14,13 +14,15 @@ import org.bukkit.util.Vector;
 import java.util.List;
 
 public class AquaTorrent extends Spell {
+    private static final String SPELL_ID_BASE = "aqua_torrent";
+
     private final double knockbackMultiplier;
     private final int slownessDurationTicks;
     private final int slownessAmplifier;
 
     public AquaTorrent(int tier) {
         super(
-            tier == 1 ? "aqua_torrent" : "aqua_torrent_" + tier,
+            tier == 1 ? SPELL_ID_BASE : SPELL_ID_BASE + "_" + tier,
             "Aqua Torrent" + (tier == 1 ? "" : " " + Utils.toRoman(tier)),
             SpellElement.WATER,
             tier,
@@ -34,51 +36,33 @@ public class AquaTorrent extends Spell {
     }
 
     private static int getChargeTimeForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 34;
-            case 3 -> 28;
-            default -> 40; // 2s
-        };
+        return configInt(SPELL_ID_BASE, tier, "charge-time",
+            tier == 2 ? 34 : tier == 3 ? 28 : 40);
     }
 
     private static int getManaCostForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 35;
-            case 3 -> 50;
-            default -> 20;
-        };
+        return configInt(SPELL_ID_BASE, tier, "mana-cost",
+            tier == 2 ? 35 : tier == 3 ? 50 : 20);
     }
 
     private static double getCooldownForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 4.0;
-            case 3 -> 3.0;
-            default -> 5.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "cooldown",
+            tier == 2 ? 4.0 : tier == 3 ? 3.0 : 5.0);
     }
 
     private static double getKnockbackMultiplierForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 1.5;
-            case 3 -> 2.0;
-            default -> 1.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "knockback-multiplier",
+            tier == 2 ? 1.5 : tier == 3 ? 2.0 : 1.0);
     }
 
     private static int getSlownessDurationForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 100; // 5s
-            case 3 -> 140; // 7s
-            default -> 60; // 3s
-        };
+        return configInt(SPELL_ID_BASE, tier, "slowness-duration-ticks",
+            tier == 2 ? 100 : tier == 3 ? 140 : 60);
     }
 
     private static int getSlownessAmplifierForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 1;
-            case 3 -> 2;
-            default -> 1;
-        };
+        return configInt(SPELL_ID_BASE, tier, "slowness-amplifier",
+            tier == 3 ? 2 : 1);
     }
 
     @Override

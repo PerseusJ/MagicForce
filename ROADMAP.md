@@ -25,7 +25,7 @@ in real-world testing, adding a configuration layer so server owners can tune va
 without recompiling, and polishing the player experience. No new major systems are
 introduced&mdash;the goal is a rock-solid foundation before the 2.0.0 progression overhaul.
 
-### v1.0.1 - Critical Bug Fixes
+### v1.0.1 - Critical Bug Fixes [COMPLETED]
 
 **Focus:** Fix data-loss and edge-case bugs that affect gameplay integrity.
 
@@ -39,7 +39,7 @@ introduced&mdash;the goal is a rock-solid foundation before the 2.0.0 progressio
 | **Grimoire Identity Check** | `ChantingManager.isSameGrimoire()` uses `ItemStack.isSimilar()`, which compares lore and meta. If a player socketed/removed a scroll mid-charge, the grimoire is "different" and the chant cancels. Compare by PDC grimoire identity instead. | `ChantingManager.java` |
 | **ConcurrentModification** | `ChantingManager.cleanup()` iterates `states.keySet()` while the per-tick task may still be running. Use `ConcurrentHashMap` or snapshot the keyset (already partially done with `new HashSet<>`, but the running tasks can still mutate). | `ChantingManager.java` |
 
-### v1.0.2 - Configuration System
+### v1.0.2 - Configuration System [COMPLETED]
 
 **Focus:** Introduce a `config.yml` so every hardcoded constant can be tuned by server
 owners without recompiling. This is a prerequisite for the 2.0.0 data-driven spell

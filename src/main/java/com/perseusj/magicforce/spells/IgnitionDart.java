@@ -13,18 +13,18 @@ import org.bukkit.util.Vector;
 import java.util.List;
 
 public class IgnitionDart extends Spell {
-    private static final double SPEED = 1.5;
-    private static final int SUB_STEPS = 3;
-    private static final double SUB_STEP_SIZE = SPEED / SUB_STEPS;
-    private static final int MAX_TICKS = 40;
+    private static final String SPELL_ID_BASE = "ignition_dart";
     private static final double ENTITY_CHECK_RADIUS = 1.0;
+    private static final int SUB_STEPS = 3;
 
     private final double damage;
     private final int fireTicks;
+    private final double speed;
+    private final int maxTicks;
 
     public IgnitionDart(int tier) {
         super(
-            tier == 1 ? "ignition_dart" : "ignition_dart_" + tier,
+            tier == 1 ? SPELL_ID_BASE : SPELL_ID_BASE + "_" + tier,
             "Ignition Dart" + (tier == 1 ? "" : " " + Utils.toRoman(tier)),
             SpellElement.FIRE,
             tier,
@@ -34,56 +34,53 @@ public class IgnitionDart extends Spell {
         );
         this.damage = getDamageForTier(tier);
         this.fireTicks = getFireTicksForTier(tier);
+        this.speed = getSpeedForTier(tier);
+        this.maxTicks = getMaxTicksForTier(tier);
     }
 
     private static int getChargeTimeForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 26;
-            case 3 -> 22;
-            default -> 30; // 1.5s
-        };
+        return configInt(SPELL_ID_BASE, tier, "charge-time",
+            tier == 2 ? 26 : tier == 3 ? 22 : 30);
     }
 
     private static int getManaCostForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 25;
-            case 3 -> 40;
-            default -> 15;
-        };
+        return configInt(SPELL_ID_BASE, tier, "mana-cost",
+            tier == 2 ? 25 : tier == 3 ? 40 : 15);
     }
 
     private static double getCooldownForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 2.0;
-            case 3 -> 1.0;
-            default -> 3.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "cooldown",
+            tier == 2 ? 2.0 : tier == 3 ? 1.0 : 3.0);
     }
 
     private static double getDamageForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 4.5;
-            case 3 -> 5.25;
-            default -> 3.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "damage",
+            tier == 2 ? 4.5 : tier == 3 ? 5.25 : 3.0);
     }
 
     private static int getFireTicksForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 120; // 6s
-            case 3 -> 140; // 7s
-            default -> 80;  // 4s
-        };
+        return configInt(SPELL_ID_BASE, tier, "fire-ticks",
+            tier == 2 ? 120 : tier == 3 ? 140 : 80);
+    }
+
+    private static double getSpeedForTier(int tier) {
+        return configDouble(SPELL_ID_BASE, tier, "speed", 1.5);
+    }
+
+    private static int getMaxTicksForTier(int tier) {
+        return configInt(SPELL_ID_BASE, tier, "max-ticks", 40);
     }
 
     @Override
     public void cast(Player player) {
         Location eyeLoc = player.getEyeLocation();
         Vector direction = eyeLoc.getDirection().normalize();
-        
+
         // Spawn from player's hand (approximate right hand relative to view)
         Vector right = new Vector(-direction.getZ(), 0, direction.getX()).normalize().multiply(0.4);
         Location origin = eyeLoc.clone().add(0, -0.5, 0).add(right);
+
+        final double subStepSize = speed / SUB_STEPS;
 
         new BukkitRunnable() {
             int ticks = 0;
@@ -91,13 +88,13 @@ public class IgnitionDart extends Spell {
 
             @Override
             public void run() {
-                if (ticks >= MAX_TICKS) {
+                if (ticks >= maxTicks) {
                     cancel();
                     return;
                 }
 
                 for (int step = 0; step < SUB_STEPS; step++) {
-                    current.add(direction.clone().multiply(SUB_STEP_SIZE));
+                    current.add(direction.clone().multiply(subStepSize));
 
                     spawnTrail(player, current, ticks * SUB_STEPS + step);
 

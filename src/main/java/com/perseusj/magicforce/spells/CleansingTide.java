@@ -10,13 +10,15 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class CleansingTide extends Spell {
+    private static final String SPELL_ID_BASE = "cleansing_tide";
+
     private final double healingAmount;
     private final int regenDurationTicks;
     private final int regenAmplifier;
 
     public CleansingTide(int tier) {
         super(
-            tier == 1 ? "cleansing_tide" : "cleansing_tide_" + tier,
+            tier == 1 ? SPELL_ID_BASE : SPELL_ID_BASE + "_" + tier,
             "Cleansing Tide" + (tier == 1 ? "" : " " + Utils.toRoman(tier)),
             SpellElement.WATER,
             tier,
@@ -30,51 +32,33 @@ public class CleansingTide extends Spell {
     }
 
     private static int getChargeTimeForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 42;
-            case 3 -> 34;
-            default -> 50; // 2.5s
-        };
+        return configInt(SPELL_ID_BASE, tier, "charge-time",
+            tier == 2 ? 42 : tier == 3 ? 34 : 50);
     }
 
     private static int getManaCostForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 60;
-            case 3 -> 90;
-            default -> 40;
-        };
+        return configInt(SPELL_ID_BASE, tier, "mana-cost",
+            tier == 2 ? 60 : tier == 3 ? 90 : 40);
     }
 
     private static double getCooldownForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 15.0;
-            case 3 -> 10.0;
-            default -> 20.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "cooldown",
+            tier == 2 ? 15.0 : tier == 3 ? 10.0 : 20.0);
     }
 
     private static double getHealingAmountForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 12.0;
-            case 3 -> 20.0;
-            default -> 8.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "healing-amount",
+            tier == 2 ? 12.0 : tier == 3 ? 20.0 : 8.0);
     }
 
     private static int getRegenDurationForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 80;
-            case 3 -> 120;
-            default -> 40;
-        };
+        return configInt(SPELL_ID_BASE, tier, "regen-duration-ticks",
+            tier == 2 ? 80 : tier == 3 ? 120 : 40);
     }
 
     private static int getRegenAmplifierForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 1;
-            case 3 -> 2;
-            default -> 0;
-        };
+        return configInt(SPELL_ID_BASE, tier, "regen-amplifier",
+            tier == 2 ? 1 : tier == 3 ? 2 : 0);
     }
 
     @Override

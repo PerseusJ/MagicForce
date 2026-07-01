@@ -39,7 +39,7 @@ public class GrimoireManager {
         List<String> lore = new ArrayList<>();
         lore.add(Utils.colorize("&7A mystical tome for channeling spells"));
         lore.add(Utils.colorize("&7Tier: &e" + tier));
-        int capacity = getCapacity(tier);
+        int capacity = ConfigManager.getInstance().getGrimoireCapacity(tier);
         lore.add(Utils.colorize("&7Capacity: &e" + capacity + " slots"));
         lore.add("");
         lore.add(Utils.colorize("&7Sneak + Left-Click to socket scrolls"));
@@ -77,12 +77,7 @@ public class GrimoireManager {
     }
 
     public int getCapacity(int tier) {
-        return switch (tier) {
-            case 1 -> 2;
-            case 2 -> 4;
-            case 3 -> 6;
-            default -> 2;
-        };
+        return ConfigManager.getInstance().getGrimoireCapacity(tier);
     }
 
     public int getGrimoireTier(ItemStack item) {

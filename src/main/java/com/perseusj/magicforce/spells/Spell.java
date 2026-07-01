@@ -1,5 +1,6 @@
 package com.perseusj.magicforce.spells;
 
+import com.perseusj.magicforce.managers.ConfigManager;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -30,6 +31,20 @@ public abstract class Spell {
     public int getManaCost() { return manaCost; }
     public double getCooldown() { return cooldown; }
     public int getChargeTimeTicks() { return chargeTimeTicks; }
+
+    // ── v1.0.2 config-aware helpers ─────────────────────────────────────────
+    // Subclasses use these inside their static getXForTier(tier) methods to
+    // resolve values from config.yml with the original hardcoded fallback.
+
+    protected static int configInt(String spellId, int tier, String key, int defaultValue) {
+        ConfigManager cfg = ConfigManager.getInstance();
+        return cfg.getSpellInt(spellId, tier, key, defaultValue);
+    }
+
+    protected static double configDouble(String spellId, int tier, String key, double defaultValue) {
+        ConfigManager cfg = ConfigManager.getInstance();
+        return cfg.getSpellDouble(spellId, tier, key, defaultValue);
+    }
 
     /** Cast the spell. Called after chanting completes and the player left-clicks. */
     public abstract void cast(Player player);

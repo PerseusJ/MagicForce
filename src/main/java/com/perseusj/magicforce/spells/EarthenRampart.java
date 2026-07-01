@@ -15,11 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EarthenRampart extends Spell {
+    private static final String SPELL_ID_BASE = "earthen_rampart";
+
     private final int wallDurationTicks;
 
     public EarthenRampart(int tier) {
         super(
-            tier == 1 ? "earthen_rampart" : "earthen_rampart_" + tier,
+            tier == 1 ? SPELL_ID_BASE : SPELL_ID_BASE + "_" + tier,
             "Earthen Rampart" + (tier == 1 ? "" : " " + Utils.toRoman(tier)),
             SpellElement.EARTH,
             tier,
@@ -31,35 +33,23 @@ public class EarthenRampart extends Spell {
     }
 
     private static int getChargeTimeForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 34;
-            case 3 -> 28;
-            default -> 40; // 2s
-        };
+        return configInt(SPELL_ID_BASE, tier, "charge-time",
+            tier == 2 ? 34 : tier == 3 ? 28 : 40);
     }
 
     private static int getManaCostForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 40;
-            case 3 -> 55;
-            default -> 25;
-        };
+        return configInt(SPELL_ID_BASE, tier, "mana-cost",
+            tier == 2 ? 40 : tier == 3 ? 55 : 25);
     }
 
     private static double getCooldownForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 12.0;
-            case 3 -> 10.0;
-            default -> 15.0;
-        };
+        return configDouble(SPELL_ID_BASE, tier, "cooldown",
+            tier == 2 ? 12.0 : tier == 3 ? 10.0 : 15.0);
     }
 
     private static int getDurationForTier(int tier) {
-        return switch (tier) {
-            case 2 -> 140; // 7s
-            case 3 -> 200; // 10s
-            default -> 100; // 5s
-        };
+        return configInt(SPELL_ID_BASE, tier, "wall-duration-ticks",
+            tier == 2 ? 140 : tier == 3 ? 200 : 100);
     }
 
     @Override

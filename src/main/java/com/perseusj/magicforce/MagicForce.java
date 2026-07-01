@@ -3,6 +3,7 @@ package com.perseusj.magicforce;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.perseusj.magicforce.commands.AdminCommand;
 import com.perseusj.magicforce.managers.ChantingManager;
+import com.perseusj.magicforce.managers.ConfigManager;
 import com.perseusj.magicforce.managers.CooldownManager;
 import com.perseusj.magicforce.managers.ManaManager;
 import com.perseusj.magicforce.managers.PluginManager;
@@ -20,6 +21,10 @@ public class MagicForce extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        // v1.0.2: configuration system must load first so other managers
+        // can read tunables during their own initialization.
+        ConfigManager.getInstance().load();
 
         PluginManager.getInstance().initialize();
         ChantingManager.getInstance(); // initialize singleton
